@@ -52,7 +52,7 @@ def register_test():
     
 
 base = Tk()
-base.geometry("500x500")
+base.geometry("500x400")
 base.title("Add Doctor")
 
 lb1 = Label(base, text="Test Code", width=10, font=("arial", 12))
@@ -84,27 +84,9 @@ lb7= Label(base, text="reportingrate", width=13,font=("arial",12))
 lb7.place(x=19, y=220)  
 en7= Entry(base)  
 en7.place(x=200, y=220)    
-  
-  
-
-
-  
-  
 
 Button(base, text="Register", width=10, command=register_test).place(x=200, y=400)
 base.mainloop()
 
-
-
-
-
-
-
-
-
-
-
-
-  
   
   

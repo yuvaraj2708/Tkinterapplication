@@ -28,7 +28,7 @@ def view_saved_data():
     conn.close()
 
 base = Tk()
-base.geometry("500x500")
+base.geometry("500x400")
 base.title("Add Doctor")
 
 Button(base, text="View Saved Data", width=15, command=view_saved_data).place(x=300, y=400)

@@ -49,7 +49,7 @@ def register_doctor():
     en9.delete(0, END)
 
 base = Tk()
-base.geometry("500x500")
+base.geometry("500x400")
 base.title("Add Doctor")
 
 lb1 = Label(base, text="Doctor Code", width=10, font=("arial", 12))

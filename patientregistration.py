@@ -1,5 +1,3 @@
-
-
 from tkinter import *
 import sqlite3
 
@@ -49,7 +47,14 @@ def register_patient():
     en7.delete(0, END)
     en8.delete(0, END)
     en9.delete(0, END)
-
+    
+    
+def open_patient_view():
+   
+    import patientview
+    patientview.patient_view_form()
+    
+    
 base = Tk()
 base.geometry("500x500")
 base.title("Add Patientregistration")
@@ -95,23 +100,9 @@ lb9.place(x=19, y=260)
 en9= Entry(base)  
 en9.place(x=200, y=260) 
 
-def patient_registration_form():
-    register_screen = Tk()
-    register_screen.geometry("500x500")
-    register_screen.title("Add Patient Registration")
-  
-
-    Button(register_screen, text="Register", width=10, command=register_patient).place(x=200, y=400)
-    register_screen.mainloop()
-
-
-
-
-
-
-
-
 
   
-  
-  
+
+Button(base, text="Register", width=10, command=register_patient).place(x=200, y=400)
+base.mainloop()
+

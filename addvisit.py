@@ -1,6 +1,6 @@
 from tkinter import *  
 base = Tk()  
-base.geometry("500x500")  
+base.geometry("500x400")  
 base.title("registration form")  
   
 lb1= Label(base, text="UHID", width=10, font=("arial",12))  

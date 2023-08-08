@@ -2,7 +2,7 @@ from tkinter import *
 #import library
 import sqlite3
 #open databse
-import patientregistration
+
 
 #defining login function
 def login():
@@ -26,8 +26,8 @@ def login():
 
 def open_patient_registration():
     # Import patientregistration module and call the function
-    import patientregistration
-    patientregistration.patient_registration_form()
+
+    exec(open("header.py").read())
 
     
 #defining loginform function
@@ -35,7 +35,7 @@ def Loginform():
     global login_screen
     login_screen = Tk()
     #Setting title of screen
-    login_screen.title("Krazyprogrammer.com")
+    login_screen.title("ekon")
     #setting height and width of screen
     login_screen.geometry("350x250")
     login_screen["bg"]="#1C2833"

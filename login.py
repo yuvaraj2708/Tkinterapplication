@@ -2,6 +2,7 @@ from tkinter import *
 #import library
 import sqlite3
 #open databse
+import patientregistration
 
 #defining login function
 def login():
@@ -18,9 +19,17 @@ def login():
       cursor = conn.execute('SELECT * from ADMIN where USERNAME="%s" and PASSWORD="%s"'%(uname,pwd))
       #fetch data 
       if cursor.fetchone():
-       message.set("Login success")
-      else:
-       message.set("Wrong username or password!!!")
+        message.set("Login success")
+        conn.close()
+        login_screen.destroy()  # Close the login screen
+        open_patient_registration()
+
+def open_patient_registration():
+    # Import patientregistration module and call the function
+    import patientregistration
+    patientregistration.patient_registration_form()
+
+    
 #defining loginform function
 def Loginform():
     global login_screen
@@ -50,7 +59,7 @@ def Loginform():
     #Label for displaying login status[success/failed]
     Label(login_screen, text="",textvariable=message,bg="#1C2833",fg="white",font=("Arial",12,"bold")).place(x=95,y=120)
     #Login button
-    Button(login_screen, text="Login", width=10, height=1, command=login, bg="#0E6655",fg="white",font=("Arial",12,"bold")).place(x=125,y=170)
+    Button(login_screen, text="Login", width=10, height=1, command=login, bg="#0E6655", fg="white", font=("Arial", 12, "bold")).place(x=125, y=170)
     login_screen.mainloop()
 #calling function Loginform
 Loginform()

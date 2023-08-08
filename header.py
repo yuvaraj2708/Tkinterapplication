@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-
-
 import sqlite3
 
 
@@ -11,26 +9,6 @@ class HomePage(tk.Frame):
         label = tk.Label(self, text="Home Page", font=("Arial", 20))
         label.pack(pady=50)
 
-
-#view patient data
-class ViewSavedDataPage(tk.Frame):
-    def __init__(self, master=None, **kwargs):
-        super().__init__(master, **kwargs)
-        self.view_patientsaved_data()
-
-    def view_patientsaved_data(self):
-        conn = sqlite3.connect("student.db")
-        cursor = conn.cursor()
-        
-        cursor.execute("SELECT * FROM patientregister")
-        patient_data = cursor.fetchall()
-
-        for row in patient_data:
-            patient_info = f"patientcode: {row[1]}\npatientname: {row[2]}\ntitle: {row[3]}\ndob: {row[4]}\nage: {row[5]}\nemailid: {row[6]}\nphonenumber: {row[7]}\ngender: {row[8]}\n\n"
-            patient_label = tk.Label(self, text=patient_info, font=("arial", 12))
-            patient_label.pack()
-
-        conn.close()
 
 #patient registration
 
@@ -56,14 +34,28 @@ class PatientRegistrationPage(tk.Frame):
 
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
-
+         
+        cursor.execute('''
+           CREATE TABLE IF NOT EXISTS patientregister (
+              id INTEGER PRIMARY KEY,
+              patientcode TEXT,
+              patientname TEXT,
+              title TEXT,
+              dob TEXT,
+              age TEXT,
+              emailid TEXT,
+              phonenumber TEXT,
+              gender TEXT    
+                )
+             ''')
+        conn.commit()
         # Insert data into the "patientregister" table
         cursor.execute('''
-            INSERT INTO patientregister (patientcode, patientname, title, dob, age, emailid, phonenumber, gender)
+            INSERT INTO patientregister(patientcode, patientname, title, dob, age, emailid, phonenumber, gender)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', (patientcode, patientname, title, dob, age, emailid, phonenumber, gender))
         conn.commit()
-        conn.close()
+        
 
         # Clear the entry fields
         self.en1.delete(0, tk.END)
@@ -119,8 +111,134 @@ class PatientRegistrationPage(tk.Frame):
         register_button = tk.Button(self, text="Register", width=10, command=self.register_patient)
         register_button.place(x=200, y=400)
 
+class ViewSavedDataPage(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.view_patientsaved_data()
 
+    def view_patientsaved_data(self):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM patientregister")
+        patient_data = cursor.fetchall()
 
+        # Create a Treeview widget
+        self.tree = ttk.Treeview(self, columns=("Patient Code", "Patient Name", "Title", "Date of Birth", "Age", "Email ID", "Phone Number", "Gender"), show="headings")
+        
+        # Define column headings
+        self.tree.heading("Patient Code", text="Patient Code")
+        self.tree.heading("Patient Name", text="Patient Name")
+        self.tree.heading("Title", text="Title")
+        self.tree.heading("Date of Birth", text="Date of Birth")
+        self.tree.heading("Age", text="Age")
+        self.tree.heading("Email ID", text="Email ID")
+        self.tree.heading("Phone Number", text="Phone Number")
+        self.tree.heading("Gender", text="Gender")
+
+       
+        
+        # Insert data into the table
+        for row in patient_data:
+            self.tree.insert("", "end", values=row)
+        
+        # Add Treeview widget to the frame
+        self.tree.pack(fill="both", expand=True)
+        
+        # Add a delete button
+        self.delete_button = tk.Button(self, text="Delete Selected", command=self.delete_selected)
+        self.delete_button.pack()
+        self.addvisit_button = tk.Button(self, text="add visit", command=self.add_visit)
+        self.addvisit_button.pack()
+        conn.close()
+
+    def delete_selected(self):
+        selected_item = self.tree.selection()
+        if selected_item:
+            item_id = selected_item[0]
+            values = self.tree.item(item_id, "values")
+            patient_code = values[0]  # Assuming patient code is the first column
+            conn = sqlite3.connect("student.db")
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM patientregister WHERE patientcode=?", (patient_code,))
+            conn.commit()
+            conn.close()
+            self.tree.delete(item_id)  # Remove the item from the tree
+    
+    def add_visit(self):
+        selected_item = self.tree.selection()
+        if selected_item:
+            item_id = selected_item[0]
+            values = self.tree.item(item_id, "values")
+            patient_code = values[0]  # Assuming patient code is the first column
+
+            # Close the current frame (if you want to)
+            self.destroy()
+
+            # Open the ViewvisitDataPage frame with the selected patient code
+            visit_frame = ViewvisitDataPage(patient_code)
+            visit_frame.pack(fill="both", expand=True)
+            
+            
+#add visit
+class ViewvisitDataPage(tk.Frame):
+    def __init__(self, master=None, patient_code=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.patient_code = patient_code
+        self.visit_registration_form()
+
+    def view_visitsaved_data(self):
+       patient_category =self.en1.get()
+       ref_dr = self.en3.get()
+       selected_test = self.en4.get()
+       visit_id = self.en5.get()
+       conn = sqlite3.connect("student.db")
+       cursor = conn.cursor()
+       cursor.execute('''
+           CREATE TABLE IF NOT EXISTS tests (
+              id INTEGER PRIMARY KEY,
+              patient_category TEXT,
+              ref_dr TEXT,
+              specimentype TEXT,
+              selected_test TEXT,
+              visit_id TEXT,
+                   
+                )
+             ''')
+       conn.commit()
+       cursor.execute('''
+          INSERT INTO tests (patient_category, ref_dr, specimentype, selected_test)
+          VALUES (?, ?, ?, ?)
+    ''', (patient_category, ref_dr, selected_test, visit_id))
+       conn.commit()
+       self.en1.delete(0,tk. END)
+       self.en3.delete(0, tk.END)
+       self.en4.delete(0,tk. END)
+       self.en5.delete(0, tk.END)
+    
+    def visit_registration_form(self):
+       lb1 = tk.Label(self, text="patient_category", width=10, font=("arial", 12))
+       lb1.place(x=20, y=120)
+       self.en1 = tk.Entry(self)
+       self.en1.place(x=200, y=120)
+
+       lb3 = tk.Label(self, text="ref_dr", width=10, font=("arial", 12))
+       lb3.place(x=19, y=140)
+       self.en3 = tk.Entry(self)
+       self.en3.place(x=200, y=140)
+
+       lb4 = tk.Label(self, text="specimentype", width=13, font=("arial", 12))
+       lb4.place(x=19, y=160)
+       self.en4 = tk.Entry(self)
+       self.en4.place(x=200, y=160)
+
+       lb5 = tk.Label(self, text="selected_test", width=13, font=("arial", 12))
+       lb5.place(x=19, y=180)
+       self.en5 = tk.Entry(self)
+       self.en5.place(x=200, y=180)
+   
+        
+        
 # add test
 class TestRegistrationPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -218,11 +336,22 @@ class ViewtestDataPage(tk.Frame):
 
         cursor.execute("SELECT * FROM Tests")
         doctor_data = cursor.fetchall()
-
+        
+        self.tree = ttk.Treeview(self, columns=("Test Code", "Test Name", "specimen type", "department", "report format", "reporting rate"), show="headings")
+        
+        # Define column headings
+        self.tree.heading("Test Code", text="Test Code")
+        self.tree.heading("Test Name", text="Test Name")
+        self.tree.heading("specimen type", text="specimen type")
+        self.tree.heading("department", text="ndepartment")
+        self.tree.heading("report format", text="report format")
+        self.tree.heading("reporting rate", text="reporting rate")
+        
         for row in doctor_data:
-            doctor_info = f"Test Code: {row[0]}\Test Name: {row[1]}\nspecimen type: {row[2]}\ndepartment: {row[3]}\nreport format: {row[4]}\nreporting rate: {row[5]}\n\n"
-            doctor_label = tk.Label(self, text=doctor_info, font=("arial", 12))
-            doctor_label.pack()
+            self.tree.insert("", "end", values=row)
+        
+        # Add Treeview widget to the frame
+        self.tree.pack(fill="both", expand=True)
 
         conn.close()
 
@@ -342,15 +471,27 @@ class ViewdoctorDataPage(tk.Frame):
 
         cursor.execute("SELECT * FROM doctors")
         refdoctor_data = cursor.fetchall()
-
+         
+        self.tree = ttk.Treeview(self, columns=("Doctor Code", "Doctor Name", "Qualification", "Specialisation", "Address", "Mobile","PIN Code","Email ID"), show="headings")
+        
+        # Define column headings
+        self.tree.heading("Doctor Code", text="Test Code")
+        self.tree.heading("Doctor Name", text="Doctor Name")
+        self.tree.heading("Qualification", text="Qualification")
+        self.tree.heading("Specialisation", text="Specialisation")
+        self.tree.heading("Address", text="Address")
+        self.tree.heading("Mobile", text="Mobile")
+        self.tree.heading("PIN Code", text="PIN Code")
+        self.tree.heading("Email ID", text="Email ID")
+        
         for row in refdoctor_data:
-            refdoctor_info = f"Doctor Code: {row[0]}\nDoctor Name: {row[1]}\nQualification: {row[2]}\nSpecialisation: {row[3]}\nAddress: {row[4]}\nMobile: {row[5]}\nPIN Code: {row[6]}\nEmail ID: {row[7]}\n\n"
-            refdrdoctor_label = tk.Label(self, text=refdoctor_info, font=("arial", 12))
-            refdrdoctor_label.pack()
+            self.tree.insert("", "end", values=row)
+        
+        # Add Treeview widget to the frame
+        self.tree.pack(fill="both", expand=True)
 
-
-        conn.close()
-
+        conn.close() 
+        
 
 
 

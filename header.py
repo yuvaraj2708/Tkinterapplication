@@ -6,7 +6,11 @@ import qrcode
 class HomePage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-        label = tk.Label(self, text="Home Page", font=("Arial", 20))
+        
+        # Configure the AquaMarine style
+        self.configure(bg="aquamarine")
+        
+        label = tk.Label(self, text="Home Page", font=("Arial", 20), fg="white", bg="aquamarine")
         label.pack(pady=50)
 
 
@@ -16,8 +20,8 @@ class PatientRegistrationPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
-        
-        self.label = tk.Label(self, text="Patient Registration Page", font=("Arial", 20))
+        self.configure(bg="aquamarine")
+        self.label = tk.Label(self, text="Patient Registration Page", font=("Arial", 20),bg="aquamarine")
         self.label.pack(pady=50)
 
         self.setup_registration_form()

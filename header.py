@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import sqlite3
-
+import qrcode
 
 class HomePage(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -135,7 +135,16 @@ class ViewSavedDataPage(tk.Frame):
         self.tree.heading("Email ID", text="Email ID")
         self.tree.heading("Phone Number", text="Phone Number")
         self.tree.heading("Gender", text="Gender")
-
+        
+        self.tree.column("Patient Code", width=40)
+        self.tree.column("Patient Name", width=40)
+        self.tree.column("Title", width=40)
+        self.tree.column("Date of Birth", width=40)
+        self.tree.column("Age", width=40)
+        self.tree.column("Email ID", width=40)
+        self.tree.column("Phone Number", width=40)
+        self.tree.column("Gender", width=40)
+        
        
         
         # Insert data into the table
@@ -145,100 +154,215 @@ class ViewSavedDataPage(tk.Frame):
         # Add Treeview widget to the frame
         self.tree.pack(fill="both", expand=True)
         
+        for patient_row in patient_data:
+          patient_id = patient_row[0]  # Assuming visit_id is the first column in the visit table
+          delete_button = tk.Button(self, text="Delete", command=lambda vid=patient_id: self.delete_patient(vid))
+          delete_button.pack()
+          
+          
         # Add a delete button
-        self.delete_button = tk.Button(self, text="Delete Selected", command=self.delete_selected)
-        self.delete_button.pack()
         self.addvisit_button = tk.Button(self, text="add visit", command=self.add_visit)
         self.addvisit_button.pack()
         conn.close()
+         
+    def delete_patient(self, patient_id):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
 
-    def delete_selected(self):
-        selected_item = self.tree.selection()
-        if selected_item:
-            item_id = selected_item[0]
-            values = self.tree.item(item_id, "values")
-            patient_code = values[0]  # Assuming patient code is the first column
-            conn = sqlite3.connect("student.db")
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM patientregister WHERE patientcode=?", (patient_code,))
-            conn.commit()
-            conn.close()
-            self.tree.delete(item_id)  # Remove the item from the tree
-    
+        cursor.execute("DELETE FROM patientregister WHERE id=?", (patient_id,))
+        conn.commit()
+
+        # Delete the corresponding item from the Treeview
+        for item in self.tree.get_children():
+            values = self.tree.item(item, "values")
+            if values and str(patient_id) == values[0]:
+                self.tree.delete(item)
+
+        conn.close()
+            
+            # Remove the item from the tree
     def add_visit(self):
         selected_item = self.tree.selection()
         if selected_item:
             item_id = selected_item[0]
             values = self.tree.item(item_id, "values")
-            patient_code = values[0]  # Assuming patient code is the first column
-
-            # Close the current frame (if you want to)
-            self.destroy()
-
-            # Open the ViewvisitDataPage frame with the selected patient code
-            visit_frame = ViewvisitDataPage(patient_code)
-            visit_frame.pack(fill="both", expand=True)
+            self.selected_patient = {
+                "patient_code": values[0],
+                "patient_name": values[1],
+                "title": values[2],
+                "date_of_birth": values[3],
+                "age": values[4],
+                "email_id": values[5],
+                "phone_number": values[6],
+                "gender": values[7]
+            }
             
+            # Open the window for adding visit details and pass the selected patient's details
+            self.open_add_visit_window()
+
+    def open_add_visit_window(self):
+        if self.selected_patient:
+            add_visit_page = ViewVisitDataPage(self, patient_details=self.selected_patient)
+            add_visit_page.pack()
+    
             
 #add visit
-class ViewvisitDataPage(tk.Frame):
-    def __init__(self, master=None, patient_code=None, **kwargs):
+class ViewVisitDataPage(tk.Frame):
+    def __init__(self, master=None, patient_details=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.patient_code = patient_code
-        self.visit_registration_form()
+        self.patient_details = patient_details
+        self.patient_category_var = tk.StringVar()
+        self.ref_doctor_var = tk.StringVar()
+        self.select_test_var = tk.StringVar()
+        
+        self.display_patient_details()
+        self.display_additional_fields()
+        self.display_buttons()
 
-    def view_visitsaved_data(self):
-       patient_category =self.en1.get()
-       ref_dr = self.en3.get()
-       selected_test = self.en4.get()
-       visit_id = self.en5.get()
-       conn = sqlite3.connect("student.db")
-       cursor = conn.cursor()
-       cursor.execute('''
-           CREATE TABLE IF NOT EXISTS tests (
-              id INTEGER PRIMARY KEY,
-              patient_category TEXT,
-              ref_dr TEXT,
-              specimentype TEXT,
-              selected_test TEXT,
-              visit_id TEXT,
-                   
-                )
-             ''')
-       conn.commit()
-       cursor.execute('''
-          INSERT INTO tests (patient_category, ref_dr, specimentype, selected_test)
-          VALUES (?, ?, ?, ?)
-    ''', (patient_category, ref_dr, selected_test, visit_id))
-       conn.commit()
-       self.en1.delete(0,tk. END)
-       self.en3.delete(0, tk.END)
-       self.en4.delete(0,tk. END)
-       self.en5.delete(0, tk.END)
+    def display_patient_details(self):
+        label = tk.Label(self, text="Patient Details")
+        label.pack()
+        
+        for field, value in self.patient_details.items():
+            detail_label = tk.Label(self, text=f"{field}: {value}")
+            detail_label.pack()
+
+    def display_additional_fields(self):
+        # Patient Category
+        patient_category_label = tk.Label(self, text="Patient Category")
+        patient_category_label.pack()
+        patient_category_entry = tk.Entry(self, textvariable=self.patient_category_var)
+        patient_category_entry.pack()
+
+        # Ref Dr
+        ref_doctor_label = tk.Label(self, text="Ref Dr")
+        ref_doctor_label.pack()
+        ref_doctor_entry = tk.Entry(self, textvariable=self.ref_doctor_var)
+        ref_doctor_entry.pack()
+
+        # Select Test
+        select_test_label = tk.Label(self, text="Select Test")
+        select_test_label.pack()
+        select_test_entry = tk.Entry(self, textvariable=self.select_test_var)
+        select_test_entry.pack()
+
+    def display_buttons(self):
+        save_button = tk.Button(self, text="Save Visit", command=self.save_visit)
+        save_button.pack()
+
+    def save_visit(self):
+        patient_code = self.patient_details["patient_code"]
+        patient_name = self.patient_details["patient_name"]
+        patient_category = self.patient_category_var.get()
+        ref_doctor = self.ref_doctor_var.get()
+        selected_test = self.select_test_var.get()
+
+        # Connect to the visit database
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        # Insert visit details into the visit table
+        cursor.execute("INSERT INTO visit (patient_code, patient_name, patient_category, ref_doctor, selected_test) VALUES (?, ?, ?, ?, ?)",
+                       (patient_code, patient_name, patient_category, ref_doctor, selected_test))
+
+        conn.commit()
+        conn.close()
+        
+        self.destroy()
+        # Create and pack the ViewAllVisitsFrame
+        view_all_visits_frame = ViewAllVisitsFrame(self.master)
+        view_all_visits_frame.pack()
+
+class ViewAllVisitsFrame(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.view_all_visits()
+
+    def view_all_visits(self):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM visit")
+        visit_data = cursor.fetchall()
+
+        # Create a Treeview widget
+        self.tree = ttk.Treeview(self, columns=("Visit ID", "Patient Code", "Patient Name", "Patient Category", "Ref Dr", "Selected Test", "Delete"), show="headings", height=10)
+
+        # Define column headings
+        self.tree.heading("Visit ID", text="Visit ID")
+        self.tree.heading("Patient Code", text="Patient Code")
+        self.tree.heading("Patient Name", text="Patient Name")
+        self.tree.heading("Patient Category", text="Patient Category")
+        self.tree.heading("Ref Dr", text="Ref Dr")
+        self.tree.heading("Selected Test", text="Selected Test")
+        self.tree.heading("Delete", text="Delete")
+        
+        self.tree.column("Visit ID", width=40)
+        self.tree.column("Patient Code", width=60)
+        self.tree.column("Patient Name", width=80)
+        self.tree.column("Patient Category", width=100)
+        self.tree.column("Ref Dr", width=120)
+        self.tree.column("Selected Test", width=150)
+        self.tree.column("Delete", width=120)  # New column width
+
+        
+        # Insert data into the table
+        for visit_row in visit_data:
+            visit_id = visit_row[0]
+            
+            delete_button = tk.Button(self.tree, text="Delete", command=lambda vid=visit_id: self.delete_visit(vid))
+            delete_button.pack()
+            
+            qrcode_button = tk.Button(self.tree, text="Generate QR Code", command=lambda row=visit_row: self.generate_qr_code(row))
+            qrcode_button.pack()
+
+            self.tree.insert("", "end", values=visit_row + (delete_button, qrcode_button), tags=("button",))
+
+            self.tree.insert("", "end", values=visit_row + (delete_button, qrcode_button), tags=("button",))
+        # Set row height
+        self.tree['height'] = len(visit_data)
+
+        # Add Treeview widget to the frame
+        self.tree.pack(fill="both", expand=True)
+
+    def delete_visit(self, visit_id):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM visit WHERE id=?", (visit_id,))
+        conn.commit()
+
+        # Delete the corresponding item from the Treeview
+        for item in self.tree.get_children():
+            values = self.tree.item(item, "values")
+            if values and visit_id == values[0]:
+                self.tree.delete(item)
+
+        conn.close()
     
-    def visit_registration_form(self):
-       lb1 = tk.Label(self, text="patient_category", width=10, font=("arial", 12))
-       lb1.place(x=20, y=120)
-       self.en1 = tk.Entry(self)
-       self.en1.place(x=200, y=120)
+    def generate_qr_code(self, row):
+        patient_id = row[0]  # Assuming patient_id is the first column in the visit table
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
 
-       lb3 = tk.Label(self, text="ref_dr", width=10, font=("arial", 12))
-       lb3.place(x=19, y=140)
-       self.en3 = tk.Entry(self)
-       self.en3.place(x=200, y=140)
+        cursor.execute("SELECT * FROM visit WHERE id=?", (patient_id,))
+        visit_data = cursor.fetchone()
+        conn.close()
 
-       lb4 = tk.Label(self, text="specimentype", width=13, font=("arial", 12))
-       lb4.place(x=19, y=160)
-       self.en4 = tk.Entry(self)
-       self.en4.place(x=200, y=160)
+        qr_code_data = f"Patient Name: {visit_data[1]}\nPatient Code: {visit_data[2]}\nPatient Category: {visit_data[3]}\nRef Dr: {visit_data[4]}\nSelected Test: {visit_data[5]}"
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(qr_code_data)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
 
-       lb5 = tk.Label(self, text="selected_test", width=13, font=("arial", 12))
-       lb5.place(x=19, y=180)
-       self.en5 = tk.Entry(self)
-       self.en5.place(x=200, y=180)
-   
-        
-        
+        qr_img.show()  
+
+
 # add test
 class TestRegistrationPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -346,6 +470,13 @@ class ViewtestDataPage(tk.Frame):
         self.tree.heading("department", text="ndepartment")
         self.tree.heading("report format", text="report format")
         self.tree.heading("reporting rate", text="reporting rate")
+        
+        self.tree.column("Test Code", width=40)
+        self.tree.column("Test Name", width=40)
+        self.tree.column("specimen type", width=40)
+        self.tree.column("department", width=40)
+        self.tree.column("report format", width=40)
+        self.tree.column("reporting rate", width=40)
         
         for row in doctor_data:
             self.tree.insert("", "end", values=row)
@@ -484,6 +615,16 @@ class ViewdoctorDataPage(tk.Frame):
         self.tree.heading("PIN Code", text="PIN Code")
         self.tree.heading("Email ID", text="Email ID")
         
+        self.tree.column("Doctor Code", width=40)
+        self.tree.column("Doctor Name", width=40)
+        self.tree.column("Qualification", width=40)
+        self.tree.column("Specialisation", width=40)
+        self.tree.column("Address", width=40)
+        self.tree.column("Mobile", width=40)
+        self.tree.column("PIN Code", width=40)
+        self.tree.column("Email ID", width=40)
+   
+        
         for row in refdoctor_data:
             self.tree.insert("", "end", values=row)
         
@@ -498,9 +639,11 @@ class ViewdoctorDataPage(tk.Frame):
 class DashboardApp:
     def __init__(self, root):
         self.root = root
-        self.root.geometry("800x600")
+        
         self.root.title("Dashboard")
-
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        self.root.geometry(f"{screen_width}x{screen_height}")
         self.main_frame = ttk.Notebook(self.root)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -512,7 +655,7 @@ class DashboardApp:
             "viewtest":  ViewtestDataPage(self.main_frame),
             "Add refdr":refdrRegistrationPage(self.main_frame),
            "viewrefdr": ViewdoctorDataPage(self.main_frame),
-           
+           "registrationsummary":ViewAllVisitsFrame(self.main_frame)
         }
         for page_name, page_instance in self.pages.items():
             self.main_frame.add(page_instance, text=page_name.capitalize())

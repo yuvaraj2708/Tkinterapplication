@@ -6,6 +6,7 @@ cursor = conn.cursor()
 # Create the visit table
 cursor.execute('''CREATE TABLE IF NOT EXISTS visit (
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  visitid TEXT,
                   patient_code TEXT,
                   patient_name TEXT,
                   patient_category TEXT,

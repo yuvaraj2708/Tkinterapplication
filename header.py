@@ -66,11 +66,35 @@ class PatientRegistrationPage(tk.Frame):
         self.en7.delete(0, tk.END)
         self.en8.delete(0, tk.END)
         self.en9.delete(0, tk.END)
+        self.setup_registration_form() 
+    def generate_uhid(self):
+      conn = sqlite3.connect("student.db")
+      cursor = conn.cursor()
 
+    # Get the current maximum UHID from the database
+      cursor.execute("SELECT MAX(`patientcode`) FROM patientregister")
+      max_uhid = cursor.fetchone()[0]
+
+      if max_uhid:
+        # Extract the numeric part of the UHID and increment it
+        numeric_part = int(max_uhid[1:]) + 1
+        new_uhid = f"P{numeric_part:05d}"
+      else:
+        # If no UHID exists, start from P00001
+        new_uhid = "P00001"
+
+      conn.close()
+      return new_uhid
+
+  
+  
     def setup_registration_form(self):
-        lb1 = tk.Label(self, text="patientcode", width=10, font=("arial", 12))
+        uhid = self.generate_uhid()
+        lb1 = tk.Label(self, text="patient code", width=10, font=("arial", 12))
         lb1.place(x=20, y=120)
         self.en1 = tk.Entry(self)
+        self.en1.insert(0, uhid)  # Set the generated UHID as the default value
+        self.en1.config(state="readonly")  # Make the UHID field read-only
         self.en1.place(x=200, y=120)
 
         lb2 = tk.Label(self, text="patientname", width=10, font=("arial", 12))
@@ -384,7 +408,8 @@ class TestRegistrationPage(tk.Frame):
        
        conn = sqlite3.connect("student.db")
        cursor = conn.cursor()
-
+       
+       
 # Create the "doctors" table if it doesn't exist
        cursor.execute('''
            CREATE TABLE IF NOT EXISTS tests (
@@ -412,14 +437,35 @@ class TestRegistrationPage(tk.Frame):
        self.en5.delete(0, tk.END)
        self.en6.delete(0,tk. END)
        self.en7.delete(0, tk.END)
-    
+                
+    def generate_testuhid(self):
+      conn = sqlite3.connect("student.db")
+      cursor = conn.cursor()
 
+    # Get the current maximum UHID from the database
+      cursor.execute("SELECT MAX(`Testcode`) FROM tests")
+      max_testuhid = cursor.fetchone()[0]
+
+      if max_testuhid:
+        # Extract the numeric part of the UHID and increment it
+        numeric_part = int(max_testuhid[1:]) + 1
+        new_testuhid = f"T{numeric_part:05d}"
+      else:
+        # If no UHID exists, start from P00001
+        new_testuhid = "T00001"
+
+      conn.close()
+      return new_testuhid
+  
     def test_registration_form(self):
-       lb1 = tk.Label(self, text="Test Code", width=10, font=("arial", 12))
+       uhid = self.generate_testuhid()
+       lb1 = tk.Label(self, text="Test code", width=10, font=("arial", 12))
        lb1.place(x=20, y=120)
        self.en1 = tk.Entry(self)
+       self.en1.insert(0, uhid)  # Set the generated UHID as the default value
+       self.en1.config(state="readonly")  # Make the UHID field read-only
        self.en1.place(x=200, y=120)
-
+       
        lb3 = tk.Label(self, text="Test Name", width=10, font=("arial", 12))
        lb3.place(x=19, y=140)
        self.en3 = tk.Entry(self)
@@ -483,7 +529,26 @@ class ViewtestDataPage(tk.Frame):
         
         # Add Treeview widget to the frame
         self.tree.pack(fill="both", expand=True)
+        for tests_row in doctor_data:
+            tests_id = tests_row[0]
+            
+            delete_button = tk.Button(self.tree, text="Delete", command=lambda vid=tests_id: self.delete_test(vid))
+            delete_button.pack()
+               
+    def delete_test(self, test_id):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
 
+        cursor.execute("DELETE FROM tests WHERE id=?", (test_id,))
+        conn.commit()
+
+        # Delete the corresponding item from the Treeview
+        for item in self.tree.get_children():
+            values = self.tree.item(item, "values")
+            if values and test_id == values[0]:
+                self.tree.delete(item)
+                
+        
         conn.close()
 
 
@@ -493,7 +558,7 @@ class refdrRegistrationPage(tk.Frame):
         super().__init__(master, **kwargs)
         self.master = master
         
-        self.label = tk.Label(self, text="Patient Registration Page", font=("Arial", 20))
+        self.label = tk.Label(self, text="Doctor Registration Page", font=("Arial", 20))
         self.label.pack(pady=50)
 
         self.setup_refdrregistration_form()
@@ -543,11 +608,36 @@ class refdrRegistrationPage(tk.Frame):
        self.en7.delete(0, tk.END)
        self.en8.delete(0, tk.END)
        self.en9.delete(0, tk.END)
+    
+    def generate_refdruhid(self):
+      conn = sqlite3.connect("student.db")
+      cursor = conn.cursor()
 
+    # Get the current maximum UHID from the database
+      cursor.execute("SELECT MAX(`code`) FROM doctors")
+      max_doctoruhid = cursor.fetchone()[0]
+
+      if max_doctoruhid:
+        # Extract the numeric part of the UHID and increment it
+        numeric_part = int(max_doctoruhid[1:]) + 1
+        new_doctoruhid = f"D{numeric_part:05d}"
+      else:
+        # If no UHID exists, start from P00001
+        new_doctoruhid = "D00001"
+
+      conn.close()
+      return new_doctoruhid
+  
+    
+       
+    
     def setup_refdrregistration_form(self):
-        lb1 = tk.Label(self, text="Doctor Code", width=10, font=("arial", 12))
+        uhid = self.generate_refdruhid()
+        lb1 = tk.Label(self, text="Doctor code", width=10, font=("arial", 12))
         lb1.place(x=20, y=120)
-        self.en1 =tk.Entry(self)
+        self.en1 = tk.Entry(self)
+        self.en1.insert(0, uhid)  # Set the generated UHID as the default value
+        self.en1.config(state="readonly")  # Make the UHID field read-only
         self.en1.place(x=200, y=120)
 
         lb3 =tk.Label(self, text="Doctor Name", width=10, font=("arial", 12))
@@ -624,7 +714,6 @@ class ViewdoctorDataPage(tk.Frame):
         self.tree.column("PIN Code", width=40)
         self.tree.column("Email ID", width=40)
    
-        
         for row in refdoctor_data:
             self.tree.insert("", "end", values=row)
         
@@ -632,7 +721,29 @@ class ViewdoctorDataPage(tk.Frame):
         self.tree.pack(fill="both", expand=True)
 
         conn.close() 
+     
+        for doctor_row in refdoctor_data:
+            doctor_id = doctor_row[0]
+            
+            delete_button = tk.Button(self.tree, text="Delete", command=lambda vid=doctor_id: self.delete_refdr(vid))
+            delete_button.pack()
+               
+    def delete_refdr(self, test_id):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM doctors WHERE id=?", (test_id,))
+        conn.commit()
+
+        # Delete the corresponding item from the Treeview
+        for item in self.tree.get_children():
+            values = self.tree.item(item, "values")
+            if values and test_id == values[0]:
+                self.tree.delete(item)
+                
         
+        conn.close()
+
 
 
 

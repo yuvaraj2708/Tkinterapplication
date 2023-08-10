@@ -16,10 +16,12 @@ class HomePage(tk.Frame):
 
 #patient registration
 
+
 class PatientRegistrationPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
+        
         self.configure(bg="aquamarine")
         self.label = tk.Label(self, text="Patient Registration Page", font=("Arial", 20),bg="aquamarine")
         self.label.pack(pady=50)
@@ -89,6 +91,19 @@ class PatientRegistrationPage(tk.Frame):
 
       conn.close()
       return new_uhid
+    
+    def edit_patient(self, patient_id):
+     conn = sqlite3.connect("student.db")
+     cursor = conn.cursor()
+
+     cursor.execute("SELECT * FROM patientregister WHERE id=?", (patient_id,))
+     patient_details = cursor.fetchone()
+     conn.close()
+
+     if patient_details:
+        # Create an instance of PatientRegistrationPage and pass patient_details
+        edit_page = PatientRegistrationPage(self.master, patient_details=patient_details)
+        self.master.show_frame(edit_page)
 
   
   
@@ -187,6 +202,8 @@ class ViewSavedDataPage(tk.Frame):
           delete_button = tk.Button(self, text="Delete", command=lambda vid=patient_id: self.delete_patient(vid))
           delete_button.pack()
           
+          edit_button = tk.Button(self, text="Edit", command=lambda vid=patient_id: self.edit_patient(vid))  # Add an edit button
+          edit_button.pack()
           
         # Add a delete button
         self.addvisit_button = tk.Button(self, text="add visit", command=self.add_visit)
@@ -227,6 +244,88 @@ class ViewSavedDataPage(tk.Frame):
             
             # Open the window for adding visit details and pass the selected patient's details
             self.open_add_visit_window()
+
+    def edit_patient(self, patient_id):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM patientregister WHERE id=?", (patient_id,))
+        patient_details = cursor.fetchone()
+        conn.close()
+
+        if patient_details:
+            # Create a new frame for editing
+            self.edit_frame = tk.Frame(self)
+            self.edit_frame.pack(fill="both", expand=True)
+
+            # Populate editable fields with patient details
+            self.en1_edit = tk.Entry(self.edit_frame)
+            self.en1_edit.insert(0, patient_details[0])  # Patient code
+            self.en1_edit.config(state="readonly")  # Make it read-only
+            self.en1_edit.pack()
+
+            self.en3_edit = tk.Entry(self.edit_frame)
+            self.en3_edit.insert(0, patient_details[1])  # Patient name
+            self.en3_edit.pack()
+
+            self.en4_edit = tk.Entry(self.edit_frame)
+            self.en4_edit.insert(0, patient_details[2])  # Title
+            self.en4_edit.pack()
+
+            self.en5_edit = tk.Entry(self.edit_frame)
+            self.en5_edit.insert(0, patient_details[3])  # dob
+            self.en5_edit.pack()
+
+            self.en6_edit = tk.Entry(self.edit_frame)
+            self.en6_edit.insert(0, patient_details[4])  # age
+            self.en6_edit.pack()
+
+            self.en7_edit = tk.Entry(self.edit_frame)
+            self.en7_edit.insert(0, patient_details[5])  # emailid
+            self.en7_edit.pack()
+
+            self.en8_edit = tk.Entry(self.edit_frame)
+            self.en8_edit.insert(0, patient_details[6])  # phonenumber
+            self.en8_edit.pack()
+
+            self.en9_edit = tk.Entry(self.edit_frame)
+            self.en9_edit.insert(0, patient_details[7])  # gender
+            self.en9_edit.pack()
+
+            update_button = tk.Button(self.edit_frame, text="Update", command=lambda: self.update_patient(patient_id))
+            update_button.pack()
+
+    def update_patient(self, patient_id):
+        # Get values from the editable fields
+        updated_patientcode = self.en1_edit.get()
+        updated_patientname = self.en3_edit.get()
+        updated_title = self.en4_edit.get()
+        updated_dob = self.en5_edit.get()
+        updated_age = self.en6_edit.get()
+        updated_emailid = self.en7_edit.get()
+        updated_phonenumber = self.en8_edit.get()
+        updated_gender = self.en9_edit.get()
+        # ... similarly get values from other editable fields ...
+
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        # Update patient details
+        cursor.execute('''
+            UPDATE patientregister
+            SET patientcode=?, patientname=?, title=?, dob=?, age=?, emailid=?, phonenumber=?, gender=?
+            WHERE id=?
+        ''', (updated_patientcode, updated_patientname, updated_title, updated_dob,updated_age, updated_emailid,updated_phonenumber,updated_gender, patient_id))
+
+        conn.commit()
+        conn.close()
+
+        # Clear the edit frame
+        self.edit_frame.destroy()
+        self.edit_frame = None
+
+        # Refresh the patient data in the treeview
+        self.view_patientsaved_data()
 
     def open_add_visit_window(self):
         if self.selected_patient:
@@ -296,6 +395,7 @@ class ViewVisitDataPage(tk.Frame):
         conn.commit()
         conn.close()
         
+        
         self.destroy()
         # Create and pack the ViewAllVisitsFrame
         view_all_visits_frame = ViewAllVisitsFrame(self.master)
@@ -341,6 +441,9 @@ class ViewAllVisitsFrame(tk.Frame):
             delete_button = tk.Button(self.tree, text="Delete", command=lambda vid=visit_id: self.delete_visit(vid))
             delete_button.pack()
             
+            edit_button = tk.Button(self, text="Edit", command=lambda vid=visit_id: self.edit_visit(vid))  # Add an edit button
+            edit_button.pack()
+            
             qrcode_button = tk.Button(self.tree, text="Generate QR Code", command=lambda row=visit_row: self.generate_qr_code(row))
             qrcode_button.pack()
 
@@ -352,6 +455,78 @@ class ViewAllVisitsFrame(tk.Frame):
 
         # Add Treeview widget to the frame
         self.tree.pack(fill="both", expand=True)
+        
+    def edit_visit(self, visit_id):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM visit WHERE id=?", (visit_id,))
+        visit_details = cursor.fetchone()
+        conn.close()
+
+        if visit_details:
+            # Create a new frame for editing
+            self.edit_frame = tk.Frame(self)
+            self.edit_frame.pack(fill="both", expand=True)
+
+            # Populate editable fields with patient details
+            self.en1_edit = tk.Entry(self.edit_frame)
+            self.en1_edit.insert(0, visit_details[0])  # Patient code
+            self.en1_edit.config(state="readonly")  # Make it read-only
+            self.en1_edit.pack()
+
+            self.en3_edit = tk.Entry(self.edit_frame)
+            self.en3_edit.insert(0, visit_details[1])  # Patient name
+            self.en3_edit.pack()
+
+            self.en4_edit = tk.Entry(self.edit_frame)
+            self.en4_edit.insert(0, visit_details[2])  # Title
+            self.en4_edit.pack()
+
+            self.en5_edit = tk.Entry(self.edit_frame)
+            self.en5_edit.insert(0, visit_details[3])  # dob
+            self.en5_edit.pack()
+
+            self.en6_edit = tk.Entry(self.edit_frame)
+            self.en6_edit.insert(0, visit_details[4])  # age
+            self.en6_edit.pack()
+
+            self.en7_edit = tk.Entry(self.edit_frame)
+            self.en7_edit.insert(0, visit_details[5])  # emailid
+            self.en7_edit.pack()
+
+            update_button = tk.Button(self.edit_frame, text="Update", command=lambda: self.update_visit(visit_id))
+            update_button.pack()
+
+    def update_visit(self, visit_id):
+        # Get values from the editable fields
+        updated_patientcode = self.en1_edit.get()
+        updated_patientname = self.en3_edit.get()
+        updated_patientcategory = self.en4_edit.get()
+        updated_refdoctor = self.en5_edit.get()
+        updated_selected_test = self.en6_edit.get()
+        
+        # ... similarly get values from other editable fields ...
+
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        # Update patient details
+        cursor.execute('''
+            UPDATE visit  
+            SET patient_code=?, patient_name=?, patient_category=?, ref_doctor=?, selected_test=?
+            WHERE id=?
+        ''', (updated_patientcode, updated_patientname, updated_patientcategory, updated_refdoctor,updated_selected_test,visit_id))
+
+        conn.commit()
+        conn.close()
+
+        # Clear the edit frame
+        self.edit_frame.destroy()
+        self.edit_frame = None
+
+        # Refresh the patient data in the treeview
+        self.view_all_visits()
 
     def delete_visit(self, visit_id):
         conn = sqlite3.connect("student.db")
@@ -443,23 +618,24 @@ class TestRegistrationPage(tk.Frame):
        self.en7.delete(0, tk.END)
                 
     def generate_testuhid(self):
-      conn = sqlite3.connect("student.db")
-      cursor = conn.cursor()
+     conn = sqlite3.connect("student.db")
+     cursor = conn.cursor()
 
     # Get the current maximum UHID from the database
-      cursor.execute("SELECT MAX(`Testcode`) FROM tests")
-      max_testuhid = cursor.fetchone()[0]
+     cursor.execute("SELECT MAX(`Testcode`) FROM tests")
+     max_testuhid = cursor.fetchone()[0]
 
-      if max_testuhid:
+     if max_testuhid:
         # Extract the numeric part of the UHID and increment it
         numeric_part = int(max_testuhid[1:]) + 1
         new_testuhid = f"T{numeric_part:05d}"
-      else:
-        # If no UHID exists, start from P00001
+     else:
+        # If no UHID exists, start from T00001
         new_testuhid = "T00001"
 
-      conn.close()
-      return new_testuhid
+     conn.close()
+     return new_testuhid
+
   
     def test_registration_form(self):
        uhid = self.generate_testuhid()
@@ -533,12 +709,90 @@ class ViewtestDataPage(tk.Frame):
         
         # Add Treeview widget to the frame
         self.tree.pack(fill="both", expand=True)
+        
         for tests_row in doctor_data:
             tests_id = tests_row[0]
             
+            edit_button = tk.Button(self, text="Edit", command=lambda vid=tests_id: self.edit_test(vid))  # Add an edit button
+            edit_button.pack()
+            
             delete_button = tk.Button(self.tree, text="Delete", command=lambda vid=tests_id: self.delete_test(vid))
             delete_button.pack()
-               
+         
+    def edit_test(self, tests_id):
+            conn = sqlite3.connect("student.db")
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT * FROM Tests WHERE id=?", (tests_id,))
+            test_details = cursor.fetchone()
+            conn.close()
+
+            if test_details:
+            # Create a new frame for editing
+              self.edit_frame = tk.Frame(self)
+              self.edit_frame.pack(fill="both", expand=True)
+
+            # Populate editable fields with patient details
+              self.en1_edit = tk.Entry(self.edit_frame)
+              self.en1_edit.insert(0, test_details[0])  # Patient code
+              self.en1_edit.config(state="readonly")  # Make it read-only
+              self.en1_edit.pack()
+
+              self.en3_edit = tk.Entry(self.edit_frame)
+              self.en3_edit.insert(0, test_details[1])  # Patient name
+              self.en3_edit.pack()
+
+              self.en4_edit = tk.Entry(self.edit_frame)
+              self.en4_edit.insert(0, test_details[2])  # Title
+              self.en4_edit.pack()
+  
+              self.en5_edit = tk.Entry(self.edit_frame)
+              self.en5_edit.insert(0, test_details[3])  # dob
+              self.en5_edit.pack()
+  
+              self.en6_edit = tk.Entry(self.edit_frame)
+              self.en6_edit.insert(0, test_details[4])  # age
+              self.en6_edit.pack()
+              
+              self.en7_edit = tk.Entry(self.edit_frame)
+              self.en7_edit.insert(0, test_details[5])  # age
+              self.en7_edit.pack()
+  
+              update_button = tk.Button(self.edit_frame, text="Update", command=lambda: self.update_test(tests_id))
+              update_button.pack()
+  
+    def update_test(self, tests_id):
+        # Get values from the editable fields
+        updated_Testcode = self.en1_edit.get()
+        updated_Testname = self.en3_edit.get()
+        updated_specimentype = self.en4_edit.get()
+        updated_department = self.en5_edit.get()
+        updated_reportformat = self.en6_edit.get()
+        updated_reportingrate = self.en7_edit.get()
+        
+        # ... similarly get values from other editable fields ...
+
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        # Update patient details
+        cursor.execute('''
+            UPDATE Tests
+            SET Testcode=?, Testname=?, specimentype=?, department=?, reportformat=?, reportingrate=?
+            WHERE id=?
+        ''', (updated_Testcode, updated_Testname, updated_specimentype,updated_department, updated_reportformat,updated_reportingrate,tests_id))
+
+        conn.commit()
+        conn.close()
+
+        # Clear the edit frame
+        self.edit_frame.destroy()
+        self.edit_frame = None
+
+        # Refresh the patient data in the treeview
+        self.view_testsaved_data()
+    
+              
     def delete_test(self, test_id):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
@@ -731,18 +985,104 @@ class ViewdoctorDataPage(tk.Frame):
             
             delete_button = tk.Button(self.tree, text="Delete", command=lambda vid=doctor_id: self.delete_refdr(vid))
             delete_button.pack()
-               
-    def delete_refdr(self, test_id):
+            
+            edit_button = tk.Button(self, text="Edit", command=lambda vid=doctor_id: self.edit_doctor(vid))  # Add an edit button
+            edit_button.pack()
+
+    def edit_doctor(self, doctor_id):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM doctors WHERE id=?", (test_id,))
+        cursor.execute("SELECT * FROM doctors WHERE id=?", (doctor_id,))
+        doctor_details = cursor.fetchone()
+        conn.close()
+
+        if doctor_details:
+            # Create a new frame for editing
+            self.edit_frame = tk.Frame(self)
+            self.edit_frame.pack(fill="both", expand=True)
+
+            # Populate editable fields with patient details
+            self.en1_edit = tk.Entry(self.edit_frame)
+            self.en1_edit.insert(0, doctor_details[0])  # Patient code
+            self.en1_edit.config(state="readonly")  # Make it read-only
+            self.en1_edit.pack()
+
+            self.en3_edit = tk.Entry(self.edit_frame)
+            self.en3_edit.insert(0, doctor_details[1])  # Patient name
+            self.en3_edit.pack()
+
+            self.en4_edit = tk.Entry(self.edit_frame)
+            self.en4_edit.insert(0, doctor_details[2])  # Title
+            self.en4_edit.pack()
+
+            self.en5_edit = tk.Entry(self.edit_frame)
+            self.en5_edit.insert(0, doctor_details[3])  # dob
+            self.en5_edit.pack()
+
+            self.en6_edit = tk.Entry(self.edit_frame)
+            self.en6_edit.insert(0, doctor_details[4])  # age
+            self.en6_edit.pack()
+
+            self.en7_edit = tk.Entry(self.edit_frame)
+            self.en7_edit.insert(0, doctor_details[5])  # emailid
+            self.en7_edit.pack()
+
+            self.en8_edit = tk.Entry(self.edit_frame)
+            self.en8_edit.insert(0, doctor_details[6])  # phonenumber
+            self.en8_edit.pack()
+
+            self.en9_edit = tk.Entry(self.edit_frame)
+            self.en9_edit.insert(0, doctor_details[7])  # gender
+            self.en9_edit.pack()
+
+            update_button = tk.Button(self.edit_frame, text="Update", command=lambda: self.update_doctor(doctor_id))
+            update_button.pack()
+
+    def update_doctor(self, doctor_id):
+        # Get values from the editable fields
+        updated_code = self.en1_edit.get()
+        updated_name = self.en3_edit.get()
+        updated_qualification = self.en4_edit.get()
+        updated_specialisation = self.en5_edit.get()
+        updated_address = self.en6_edit.get()
+        updated_mobile = self.en7_edit.get()
+        updated_pincode = self.en8_edit.get()
+        updated_email = self.en9_edit.get()
+        
+        # ... similarly get values from other editable fields ...
+
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        # Update patient details
+        cursor.execute('''
+            UPDATE doctors
+            SET code=?, name=?, qualification=?, specialisation=?, address=?, mobile=?, pincode=?, email=?
+            WHERE id=?
+        ''', (updated_code, updated_name, updated_qualification, updated_specialisation,updated_address, updated_mobile,updated_pincode,updated_email, doctor_id))
+
+        conn.commit()
+        conn.close()
+
+        # Clear the edit frame
+        self.edit_frame.destroy()
+        self.edit_frame = None
+
+        # Refresh the patient data in the treeview
+        self.view_doctorsaved_data()
+           
+    def delete_refdr(self, doctor_id):
+        conn = sqlite3.connect("student.db")
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM doctors WHERE id=?", (doctor_id,))
         conn.commit()
 
         # Delete the corresponding item from the Treeview
         for item in self.tree.get_children():
             values = self.tree.item(item, "values")
-            if values and test_id == values[0]:
+            if values and doctor_id == values[0]:
                 self.tree.delete(item)
                 
         

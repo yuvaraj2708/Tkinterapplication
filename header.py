@@ -3,19 +3,8 @@ from tkinter import ttk
 import sqlite3
 import qrcode
 from tkinter import *
-
-class HomePage(tk.Frame):
-    def __init__(self, master=None, **kwargs):
-        super().__init__(master, **kwargs)
-        
-        # Configure the AquaMarine style
-        self.configure(bg="aquamarine")
-        
-        label = tk.Label(self, text="Home Page", font=("Arial", 20), fg="white", bg="aquamarine")
-        label.pack(pady=50)
-
-
-#patient registration
+import barcode
+from barcode.writer import ImageWriter
 
 
 class PatientRegistrationPage(tk.Frame):
@@ -445,8 +434,11 @@ class ViewAllVisitsFrame(tk.Frame):
             edit_button = tk.Button(self, text="Edit", command=lambda vid=visit_id: self.edit_visit(vid))  # Add an edit button
             edit_button.pack()
             
-            qrcode_button = tk.Button(self.tree, text="Generate QR Code", command=lambda row=visit_row: self.generate_qr_code(row))
+            qrcode_button = tk.Button(self.tree, text="QRCode", command=lambda row=visit_row: self.generate_qr_code(row))
             qrcode_button.pack()
+            
+            barcode_button = tk.Button(self.tree, text="BarCode", command=lambda row=visit_row: self.generate_barcode(row))
+            barcode_button.pack()
 
             self.tree.insert("", "end", values=visit_row + (delete_button, qrcode_button), tags=("button",))
 
@@ -565,7 +557,10 @@ class ViewAllVisitsFrame(tk.Frame):
         qr_img = qr.make_image(fill_color="black", back_color="white")
 
         qr_img.show()  
+    
+    
 
+    
 
 # add test
 class TestRegistrationPage(tk.Frame):
@@ -1104,8 +1099,8 @@ class DashboardApp:
         screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width}x{screen_height}")
 
-        # Create menu frame
-        self.menu_frame = tk.Frame(self.root)
+        # Create menu frame with a professional style
+        self.menu_frame = tk.Frame(self.root, bg="#333333")
         self.menu_frame.pack(side=tk.TOP, fill=tk.X)
 
         # Create main frame with Notebook
@@ -1114,7 +1109,6 @@ class DashboardApp:
 
         # Add pages to the main frame
         self.pages = {
-            "home": HomePage(self.main_frame),
             "patientregister": PatientRegistrationPage(self.main_frame),
             "viewsaveddata": ViewSavedDataPage(self.main_frame),
             "Add test": TestRegistrationPage(self.main_frame),
@@ -1122,17 +1116,23 @@ class DashboardApp:
             "Add refdr": refdrRegistrationPage(self.main_frame),
             "viewrefdr": ViewdoctorDataPage(self.main_frame),
             "registrationsummary": ViewAllVisitsFrame(self.main_frame)
-            # Add other pages here
         }
         for page_name, page_instance in self.pages.items():
+         for page_name, page_instance in self.pages.items():
             self.main_frame.add(page_instance, text=page_name.capitalize())
 
-        # Create buttons in the menu frame
-        for page_name in self.pages:
-            button = tk.Button(self.menu_frame, text=page_name.capitalize(),
-                               command=lambda name=page_name: self.show_page(name))
-            button.pack(side=tk.LEFT, padx=10)
+        # Create a hierarchical menu
+        self.menu = tk.Menu(self.root)
+        self.root.config(menu=self.menu)
 
+        master_menu = tk.Menu(self.menu, tearoff=0)
+        master_menu.add_command(label="View Test", command=lambda: self.show_page("viewtest"))
+        master_menu.add_command(label="View Refdr", command=lambda: self.show_page("viewrefdr"))
+
+        self.menu.add_cascade(label="Master", menu=master_menu)
+        self.menu.add_command(label="Logout", command=lambda: self.show_page("logout"))
+
+          
     def show_page(self, page_name):
         self.main_frame.select(self.pages[page_name])
 

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 import qrcode
+from tkinter import *
 
 class HomePage(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -1094,43 +1095,87 @@ class ViewdoctorDataPage(tk.Frame):
 class DashboardApp:
     def __init__(self, root):
         self.root = root
-        
+
+        # Configure the main dashboard
         self.root.title("Dashboard")
+        icon = tk.PhotoImage(file="app-logo.gif")  # Change "app-icon.gif" to your icon file
+        self.root.iconphoto(True, icon)
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width}x{screen_height}")
+
+        # Create menu frame
+        self.menu_frame = tk.Frame(self.root)
+        self.menu_frame.pack(side=tk.TOP, fill=tk.X)
+
+        # Create main frame with Notebook
         self.main_frame = ttk.Notebook(self.root)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
+        # Add pages to the main frame
         self.pages = {
             "home": HomePage(self.main_frame),
             "patientregister": PatientRegistrationPage(self.main_frame),
             "viewsaveddata": ViewSavedDataPage(self.main_frame),
             "Add test": TestRegistrationPage(self.main_frame),
             "viewtest":  ViewtestDataPage(self.main_frame),
-            "Add refdr":refdrRegistrationPage(self.main_frame),
-           "viewrefdr": ViewdoctorDataPage(self.main_frame),
-           "registrationsummary":ViewAllVisitsFrame(self.main_frame)
+            "Add refdr": refdrRegistrationPage(self.main_frame),
+            "viewrefdr": ViewdoctorDataPage(self.main_frame),
+            "registrationsummary": ViewAllVisitsFrame(self.main_frame)
+            # Add other pages here
         }
         for page_name, page_instance in self.pages.items():
             self.main_frame.add(page_instance, text=page_name.capitalize())
 
-        self.menu_frame = tk.Frame(self.root)
-        self.menu_frame.pack()
-
+        # Create buttons in the menu frame
         for page_name in self.pages:
             button = tk.Button(self.menu_frame, text=page_name.capitalize(),
                                command=lambda name=page_name: self.show_page(name))
             button.pack(side=tk.LEFT, padx=10)
-            
 
     def show_page(self, page_name):
         self.main_frame.select(self.pages[page_name])
 
-def main():
-    root = tk.Tk()
+def login():
+    uname = username.get()
+    pwd = password.get()
+
+    if uname == '' or pwd == '':
+        message.set("Fill the empty fields!!!")
+    else:
+        conn = sqlite3.connect('student.db')
+        cursor = conn.execute('SELECT * from ADMIN where USERNAME="%s" and PASSWORD="%s"' % (uname, pwd))
+        if cursor.fetchone():
+            message.set("Login success")
+            conn.close()
+            login_screen.destroy()  # Close the login screen
+            open_dashboard()
+
+def open_dashboard():
+    root = Tk()
     app = DashboardApp(root)
     root.mainloop()
 
-if __name__ == "__main__":
-    main()
+def Loginform():
+    global login_screen
+    login_screen = Tk()
+    login_screen.title("ekon")
+    login_screen.geometry("350x250")
+    login_screen["bg"] = "#1C2833"
+    global message
+    global username
+    global password
+    username = StringVar()
+    password = StringVar()
+    message = StringVar()
+
+    Label(login_screen, width="300", text="Login Form", bg="#0E6655", fg="white", font=("Arial", 12, "bold")).pack()
+    Label(login_screen, text="Username * ", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=20, y=40)
+    Entry(login_screen, textvariable=username, bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=120, y=42)
+    Label(login_screen, text="Password * ", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=20, y=80)
+    Entry(login_screen, textvariable=password, show="*", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=120, y=82)
+    Label(login_screen, text="", textvariable=message, bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=95, y=120)
+    Button(login_screen, text="Login", width=10, height=1, command=login, bg="#0E6655", fg="white", font=("Arial", 12, "bold")).place(x=125, y=170)
+    login_screen.mainloop()
+
+Loginform()

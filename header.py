@@ -5,19 +5,21 @@ import qrcode
 from tkinter import *
 import barcode
 from barcode.writer import ImageWriter
-
+from ttkthemes import ThemedStyle
 
 class PatientRegistrationPage(tk.Frame):
-    def __init__(self, master=None, **kwargs):
+    def __init__(self, master, registration_callback=None, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
-        
-        self.configure(bg="aquamarine")
-        self.label = tk.Label(self, text="Patient Registration Page", font=("Arial", 20),bg="aquamarine")
+        self.registration_callback = registration_callback
+        self.configure(bg="dim gray")
+        self.label = tk.Label(self, text="Patient Registration Page", font=("Arial", 20), bg="dim gray")
         self.label.pack(pady=50)
 
         self.setup_registration_form()
-
+    
+    
+    
     def register_patient(self):
         patientcode = self.en1.get()
         patientname = self.en3.get()
@@ -94,61 +96,75 @@ class PatientRegistrationPage(tk.Frame):
         # Create an instance of PatientRegistrationPage and pass patient_details
         edit_page = PatientRegistrationPage(self.master, patient_details=patient_details)
         self.master.show_frame(edit_page)
-
+        
+     if self.registration_callback:
+            self.registration_callback()
   
   
     def setup_registration_form(self):
+        style = ttk.Style()
+        style.configure("TEntry", padding=5, font=("Arial", 12))
+        
         uhid = self.generate_uhid()
-        lb1 = tk.Label(self, text="patient code", width=10, font=("arial", 12))
-        lb1.place(x=20, y=120)
-        self.en1 = tk.Entry(self)
-        self.en1.insert(0, uhid)  # Set the generated UHID as the default value
-        self.en1.config(state="readonly")  # Make the UHID field read-only
-        self.en1.place(x=200, y=120)
+        lb1 = ttk.Label(self, text="patient code", width=10, font=("arial", 12))
+        lb1.place(x=20, y=80)
+        self.en1 = ttk.Entry(self, style="TEntry")
+        self.en1.insert(0, uhid)
+        self.en1.state(['readonly'])  # Make the UHID field read-only
+        self.en1.place(x=200, y=100)
 
-        lb2 = tk.Label(self, text="patientname", width=10, font=("arial", 12))
+        lb2 = ttk.Label(self, text="patientname", width=12, font=("arial", 12))
         lb2.place(x=19, y=140)
-        self.en3 = tk.Entry(self)
+        self.en3 = ttk.Entry(self, style="TEntry")
         self.en3.place(x=200, y=140)
 
-        lb3 = tk.Label(self, text="title", width=10, font=("arial", 12))
-        lb3.place(x=19, y=160)
-        self.en4 = tk.Entry(self)
-        self.en4.place(x=200, y=160)
+        lb3 = ttk.Label(self, text="title", width=10, font=("arial", 12))
+        lb3.place(x=19, y=180)
+        self.en4 = ttk.Entry(self,style="TEntry")
+        self.en4.place(x=200, y=180)
 
-        lb5 = tk.Label(self, text="dob", width=13, font=("arial", 12))
-        lb5.place(x=19, y=180)
-        self.en5 = tk.Entry(self)
-        self.en5.place(x=200, y=180)
+        lb5 = ttk.Label(self, text="dob", width=13, font=("arial", 12))
+        lb5.place(x=19, y=220)
+        self.en5 = ttk.Entry(self,style="TEntry")
+        self.en5.place(x=200, y=220)
 
-        lb6 = tk.Label(self, text="age", width=13, font=("arial", 12))
-        lb6.place(x=19, y=200)
-        self.en6 = tk.Entry(self)
-        self.en6.place(x=200, y=200)
+        lb6 = ttk.Label(self, text="age", width=13, font=("arial", 12))
+        lb6.place(x=19, y=260)
+        self.en6 = ttk.Entry(self,style="TEntry")
+        self.en6.place(x=200, y=260)
 
-        lb7 = tk.Label(self, text="emailid", width=13, font=("arial", 12))
-        lb7.place(x=19, y=220)
-        self.en7 = tk.Entry(self)
-        self.en7.place(x=200, y=220)
+        lb7 = ttk.Label(self, text="emailid", width=13, font=("arial", 12))
+        lb7.place(x=19, y=300)
+        self.en7 = ttk.Entry(self,style="TEntry")
+        self.en7.place(x=200, y=300)
 
-        lb8 = tk.Label(self, text="phonenumber", width=13, font=("arial", 12))
-        lb8.place(x=19, y=240)
-        self.en8 = tk.Entry(self)
-        self.en8.place(x=200, y=240)
+        lb8 = ttk.Label(self, text="phonenumber", width=13, font=("arial", 12))
+        lb8.place(x=19, y=340)
+        self.en8 = ttk.Entry(self,style="TEntry")
+        self.en8.place(x=200, y=340)
 
-        lb9 = tk.Label(self, text="gender", width=13, font=("arial", 12))
-        lb9.place(x=19, y=260)
-        self.en9 = tk.Entry(self)
-        self.en9.place(x=200, y=260)
+        lb9 = ttk.Label(self, text="gender", width=13, font=("arial", 12))
+        lb9.place(x=19, y=380)
+        self.en9 = ttk.Entry(self,style="TEntry")
+        self.en9.place(x=200, y=380)
 
-        register_button = tk.Button(self, text="Register", width=10, command=self.register_patient)
-        register_button.place(x=200, y=400)
-
+        register_button = ttk.Button(self, text="Register", width=10, command=self.register_patient)
+        register_button.place(x=200, y=500)
+    
+  
+        
 class ViewSavedDataPage(tk.Frame):
-    def __init__(self, master=None, **kwargs):
+    def __init__(self, master=None, dashboard_app=None, **kwargs):
         super().__init__(master, **kwargs)
+        self.dashboard_app = dashboard_app
         self.view_patientsaved_data()
-
+        
+        add_button = tk.Button(self, text="Add Patient", command=self.add_patient)
+        add_button.pack() 
+        
+    def add_patient(self):
+        # Call the show_page method of the DashboardApp instance to navigate to the PatientRegistrationPage
+        self.dashboard_app.show_page("patientregister")
     def view_patientsaved_data(self):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
@@ -178,7 +194,7 @@ class ViewSavedDataPage(tk.Frame):
         self.tree.column("Phone Number", width=40)
         self.tree.column("Gender", width=40)
         
-       
+        
         
         # Insert data into the table
         for row in patient_data:
@@ -195,10 +211,13 @@ class ViewSavedDataPage(tk.Frame):
           edit_button = tk.Button(self, text="Edit", command=lambda vid=patient_id: self.edit_patient(vid))  # Add an edit button
           edit_button.pack()
           
-        # Add a delete button
-        self.addvisit_button = tk.Button(self, text="add visit", command=self.add_visit)
+        self.addvisit_button = tk.Button(self, text="Add Visit", command=self.open_add_visit_window)
         self.addvisit_button.pack()
-        conn.close()
+        
+    def open_add_visit_window(self):
+        if self.selected_patient:
+            add_visit_page = ViewVisitDataPage(self.master, patient_details=self.selected_patient)
+            self.master.show_frame(add_visit_page)  
          
     def delete_patient(self, patient_id):
         conn = sqlite3.connect("student.db")
@@ -235,6 +254,11 @@ class ViewSavedDataPage(tk.Frame):
             # Open the window for adding visit details and pass the selected patient's details
             self.open_add_visit_window()
 
+    def open_add_visit_window(self):
+        if hasattr(self, "selected_patient"):
+            add_visit_page = ViewVisitDataPage(self.master, patient_details=self.selected_patient)
+            self.master.show_frame(add_visit_page) 
+             
     def edit_patient(self, patient_id):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
@@ -317,10 +341,7 @@ class ViewSavedDataPage(tk.Frame):
         # Refresh the patient data in the treeview
         self.view_patientsaved_data()
 
-    def open_add_visit_window(self):
-        if self.selected_patient:
-            add_visit_page = ViewVisitDataPage(self, patient_details=self.selected_patient)
-            add_visit_page.pack()
+    
     
             
 #add visit
@@ -621,16 +642,22 @@ class TestRegistrationPage(tk.Frame):
      cursor.execute("SELECT MAX(`Testcode`) FROM tests")
      max_testuhid = cursor.fetchone()[0]
 
+     conn.close()
+
      if max_testuhid:
-        # Extract the numeric part of the UHID and increment it
-        numeric_part = int(max_testuhid[1:]) + 1
-        new_testuhid = f"T{numeric_part:05d}"
+        try:
+            # Extract the numeric part of the UHID and increment it
+            numeric_part = int(max_testuhid[1:]) + 1
+            new_testuhid = f"T{numeric_part:05d}"
+        except ValueError:
+            # Handle case where max_testuhid is not in the expected format
+            new_testuhid = "T00001"
      else:
         # If no UHID exists, start from T00001
         new_testuhid = "T00001"
 
-     conn.close()
      return new_testuhid
+
 
   
     def test_registration_form(self):
@@ -675,7 +702,7 @@ class ViewtestDataPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.view_testsaved_data()
-
+    
     def view_testsaved_data(self):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
@@ -714,7 +741,9 @@ class ViewtestDataPage(tk.Frame):
             
             delete_button = tk.Button(self.tree, text="Delete", command=lambda vid=tests_id: self.delete_test(vid))
             delete_button.pack()
-         
+    
+    
+     
     def edit_test(self, tests_id):
             conn = sqlite3.connect("student.db")
             cursor = conn.cursor()
@@ -870,19 +899,20 @@ class refdrRegistrationPage(tk.Frame):
     # Get the current maximum UHID from the database
       cursor.execute("SELECT MAX(`code`) FROM doctors")
       max_doctoruhid = cursor.fetchone()[0]
-
-      if max_doctoruhid:
-        # Extract the numeric part of the UHID and increment it
-        numeric_part = int(max_doctoruhid[1:]) + 1
-        new_doctoruhid = f"D{numeric_part:05d}"
-      else:
-        # If no UHID exists, start from P00001
-        new_doctoruhid = "D00001"
-
       conn.close()
+      
+      if max_doctoruhid:
+        try:
+        # Extract the numeric part of the UHID and increment it
+          numeric_part = int(max_doctoruhid[1:]) + 1
+          new_doctoruhid = f"D{numeric_part:05d}"
+        except ValueError:
+           new_doctoruhid = "D00001"
+      else:
+        new_doctoruhid = "D00001"
+        
       return new_doctoruhid
-  
-    
+
        
     
     def setup_refdrregistration_form(self):
@@ -1098,7 +1128,8 @@ class DashboardApp:
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width}x{screen_height}")
-
+        style = ThemedStyle(self.root)
+        style.set_theme("equilux")
         # Create menu frame with a professional style
         self.menu_frame = tk.Frame(self.root, bg="#333333")
         self.menu_frame.pack(side=tk.TOP, fill=tk.X)
@@ -1109,8 +1140,8 @@ class DashboardApp:
 
         # Add pages to the main frame
         self.pages = {
-            "patientregister": PatientRegistrationPage(self.main_frame),
-            "viewsaveddata": ViewSavedDataPage(self.main_frame),
+            "patientregister": PatientRegistrationPage(self.main_frame, registration_callback=self.update_saved_data_page),
+            "viewsaveddata": ViewSavedDataPage(self.main_frame, dashboard_app=self),
             "Add test": TestRegistrationPage(self.main_frame),
             "viewtest":  ViewtestDataPage(self.main_frame),
             "Add refdr": refdrRegistrationPage(self.main_frame),
@@ -1126,16 +1157,29 @@ class DashboardApp:
         self.root.config(menu=self.menu)
 
         master_menu = tk.Menu(self.menu, tearoff=0)
-        master_menu.add_command(label="View Test", command=lambda: self.show_page("viewtest"))
-        master_menu.add_command(label="View Refdr", command=lambda: self.show_page("viewrefdr"))
+        master_menu.add_command(label="Test Master", command=lambda: self.show_page("viewtest"))
+        master_menu.add_command(label="RefDr Master", command=lambda: self.show_page("viewrefdr"))
 
         self.menu.add_cascade(label="Master", menu=master_menu)
         self.menu.add_command(label="Logout", command=lambda: self.show_page("logout"))
-
-          
-    def show_page(self, page_name):
+        
+        
+    def update_saved_data_page(self):
+        saved_data_page = self.pages["viewsaveddata"]
+        saved_data_page.refresh_data()   
+           
+    def show_page(self, page_name, direct_navigation=True):
+        if not direct_navigation and page_name == "patientregister":
+            return
+        
         self.main_frame.select(self.pages[page_name])
-
+    
+    def show_frame(self, new_frame):
+        if self.current_frame is not None:
+            self.current_frame.pack_forget()
+        new_frame.pack()
+        self.current_frame = new_frame
+     
 def login():
     uname = username.get()
     pwd = password.get()

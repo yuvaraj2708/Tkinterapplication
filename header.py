@@ -6,16 +6,20 @@ from tkinter import *
 import barcode
 from barcode.writer import ImageWriter
 from ttkthemes import ThemedStyle
+import customtkinter as ctk
+from ctypes import windll, byref , sizeof,c_int
 
 class PatientRegistrationPage(tk.Frame):
     def __init__(self, master, registration_callback=None, **kwargs):
         super().__init__(master, **kwargs)
+        
         self.master = master
         self.registration_callback = registration_callback
-        self.configure(bg="dim gray")
-        self.label = tk.Label(self, text="Patient Registration Page", font=("Arial", 20), bg="dim gray")
-        self.label.pack(pady=50)
-
+        self.configure(bg="#ffffff")
+        self.label = tk.Label(self, text="",font=("Arial", 20))
+        Label(self, text= "Patient Registration Page", font= ("Arial", 16),width=25,
+        background="#ffffff").pack(pady=15, side= TOP, anchor="w")
+        self.label.pack(pady=30)
         self.setup_registration_form()
     
     
@@ -99,58 +103,77 @@ class PatientRegistrationPage(tk.Frame):
         
      if self.registration_callback:
             self.registration_callback()
-  
+    
+     
   
     def setup_registration_form(self):
-        style = ttk.Style()
-        style.configure("TEntry", padding=5, font=("Arial", 12))
         
-        uhid = self.generate_uhid()
-        lb1 = ttk.Label(self, text="patient code", width=10, font=("arial", 12))
-        lb1.place(x=20, y=80)
-        self.en1 = ttk.Entry(self, style="TEntry")
-        self.en1.insert(0, uhid)
-        self.en1.state(['readonly'])  # Make the UHID field read-only
-        self.en1.place(x=200, y=100)
-
-        lb2 = ttk.Label(self, text="patientname", width=12, font=("arial", 12))
-        lb2.place(x=19, y=140)
-        self.en3 = ttk.Entry(self, style="TEntry")
-        self.en3.place(x=200, y=140)
-
-        lb3 = ttk.Label(self, text="title", width=10, font=("arial", 12))
-        lb3.place(x=19, y=180)
-        self.en4 = ttk.Entry(self,style="TEntry")
-        self.en4.place(x=200, y=180)
-
-        lb5 = ttk.Label(self, text="dob", width=13, font=("arial", 12))
-        lb5.place(x=19, y=220)
-        self.en5 = ttk.Entry(self,style="TEntry")
-        self.en5.place(x=200, y=220)
-
-        lb6 = ttk.Label(self, text="age", width=13, font=("arial", 12))
-        lb6.place(x=19, y=260)
-        self.en6 = ttk.Entry(self,style="TEntry")
-        self.en6.place(x=200, y=260)
-
-        lb7 = ttk.Label(self, text="emailid", width=13, font=("arial", 12))
-        lb7.place(x=19, y=300)
-        self.en7 = ttk.Entry(self,style="TEntry")
-        self.en7.place(x=200, y=300)
-
-        lb8 = ttk.Label(self, text="phonenumber", width=13, font=("arial", 12))
-        lb8.place(x=19, y=340)
-        self.en8 = ttk.Entry(self,style="TEntry")
-        self.en8.place(x=200, y=340)
-
-        lb9 = ttk.Label(self, text="gender", width=13, font=("arial", 12))
-        lb9.place(x=19, y=380)
-        self.en9 = ttk.Entry(self,style="TEntry")
-        self.en9.place(x=200, y=380)
-
-        register_button = ttk.Button(self, text="Register", width=10, command=self.register_patient)
-        register_button.place(x=200, y=500)
-    
+     style = ttk.Style()
+ 
+     uhid = self.generate_uhid()
+ 
+     label_font = ("Arial", 14)
+     entry_font = ("Arial", 12)
+     
+     # Create frames for each row of entry boxes
+     row1_frame = ttk.Frame(self)
+     row1_frame.place(x=80, y=90)
+ 
+     row2_frame = ttk.Frame(self)
+     row2_frame.place(x=100, y=180)
+ 
+     row3_frame = ttk.Frame(self)
+     row3_frame.place(x=120, y=270)
+ 
+     # First row
+     lb1 = ttk.Label(row1_frame, text="Patient Code:",background="#ffffff", width='20',foreground="#1C2833" , font=label_font)
+     lb1.grid(row=0, column=1,pady=10)
+     self.en1 = ttk.Entry(row1_frame,background="#ffffff", font=entry_font)
+     self.en1.insert(0, uhid)
+     self.en1.state(['readonly'])
+     self.en1.grid(row=1, column=1, padx=10)
+ 
+     lb2 = ttk.Label(row1_frame, text="Patient Name:", background="#ffffff", width='17',foreground="#1C2833" , font=label_font)
+     lb2.grid(row=0, column=3, padx=10)
+     self.en3 = ttk.Entry(row1_frame,background="#ffffff",font=entry_font ,foreground="#1C2833",width='40')
+     self.en3.grid(row=1, column=3, padx=10)
+ 
+     lb3 = ttk.Label(row1_frame, text="Title:",background="#ffffff",width='17',foreground="#1C2833" , font=label_font)
+     lb3.grid(row=0, column=5, padx=10)
+     self.en4 = ttk.Entry(row1_frame,  background="#ffffff",font=entry_font)
+     self.en4.grid(row=1, column=5, padx=10)
+ 
+     # Second row
+     lb5 = ttk.Label(row2_frame, text="Date of Birth:",background="#ffffff",width='17',foreground="#1C2833", font=label_font)
+     lb5.grid(row=0, column=1, padx=5,pady = 10)
+     self.en5 = ttk.Entry(row2_frame, background="#ffffff", font=entry_font,width='40')
+     self.en5.grid(row=1, column=1, padx=5)
+ 
+     lb6 = ttk.Label(row2_frame, text="Age:",foreground="#1C2833" ,width='17',background="#ffffff", font=label_font)
+     lb6.grid(row=0, column=3, padx=10)
+     self.en6 = ttk.Entry(row2_frame, background="#ffffff", font=entry_font)
+     self.en6.grid(row=1, column=3, padx=10)
+ 
+     lb7 = ttk.Label(row2_frame, text="Email ID:",foreground="#1C2833" ,width='17',background="#ffffff", font=label_font)
+     lb7.grid(row=0, column=5, padx=10)
+     self.en7 = ttk.Entry(row2_frame,  background="#ffffff",font=entry_font)
+     self.en7.grid(row=1, column=5, padx=10)
+ 
+     # Third row
+     lb8 = ttk.Label(row3_frame, text="Phone Number:",background="#ffffff",width='17',foreground="#1C2833" , font=label_font)
+     lb8.grid(row=0, column=1, padx=10)
+     self.en8 = ttk.Entry(row3_frame, background="#ffffff", font=entry_font)
+     self.en8.grid(row=1, column=1, padx=10)
+ 
+     lb9 = ttk.Label(row3_frame, text="Gender:",foreground="#1C2833" ,width='17',background="#ffffff", font=label_font)
+     lb9.grid(row=0, column=3, padx=10)
+     self.en9 = ttk.Entry(row3_frame,  background="#ffffff",font=entry_font)
+     self.en9.grid(row=1, column=3, padx=10)
+ 
+     register_button = ttk.Button(self, text="Register", command=self.register_patient)
+     register_button.place(x=200, y=420)
+ 
+      
   
         
 class ViewSavedDataPage(tk.Frame):
@@ -158,8 +181,8 @@ class ViewSavedDataPage(tk.Frame):
         super().__init__(master, **kwargs)
         self.dashboard_app = dashboard_app
         self.view_patientsaved_data()
-        
-        add_button = tk.Button(self, text="Add Patient", command=self.add_patient)
+        self.configure(bg="#97e6e0")
+        add_button = tk.Button(self, text="Add Patient", command=self.add_patient,fg="black",bg="#befaf0")
         add_button.pack() 
         
     def add_patient(self):
@@ -352,7 +375,7 @@ class ViewVisitDataPage(tk.Frame):
         self.patient_category_var = tk.StringVar()
         self.ref_doctor_var = tk.StringVar()
         self.select_test_var = tk.StringVar()
-        
+        self.configure(bg="#97e6e0")
         self.display_patient_details()
         self.display_additional_fields()
         self.display_buttons()
@@ -416,7 +439,7 @@ class ViewAllVisitsFrame(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.view_all_visits()
-
+        self.configure(bg="#97e6e0")
     def view_all_visits(self):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
@@ -588,7 +611,7 @@ class TestRegistrationPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
-        
+        self.configure(bg="#97e6e0")
         self.label = tk.Label(self, text="Test Registration Page", font=("Arial", 20))
         self.label.pack(pady=50)
         
@@ -702,7 +725,7 @@ class ViewtestDataPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.view_testsaved_data()
-    
+        self.configure(bg="#97e6e0")
     def view_testsaved_data(self):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
@@ -840,7 +863,7 @@ class refdrRegistrationPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
-        
+        self.configure(bg="#97e6e0")
         self.label = tk.Label(self, text="Doctor Registration Page", font=("Arial", 20))
         self.label.pack(pady=50)
 
@@ -969,7 +992,7 @@ class ViewdoctorDataPage(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.view_doctorsaved_data()
-
+        self.configure(bg="#97e6e0")
     def view_doctorsaved_data(self):
         conn = sqlite3.connect("student.db")
         cursor = conn.cursor()
@@ -1120,18 +1143,19 @@ class ViewdoctorDataPage(tk.Frame):
 class DashboardApp:
     def __init__(self, root):
         self.root = root
-
+        
         # Configure the main dashboard
-        self.root.title("Dashboard")
+        self.root.title("Dashboard")    
         icon = tk.PhotoImage(file="app-logo.gif")  # Change "app-icon.gif" to your icon file
         self.root.iconphoto(True, icon)
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width}x{screen_height}")
         style = ThemedStyle(self.root)
-        style.set_theme("equilux")
+        root.configure(background='#ffffff')
+        style.configure("TFrame.Header", bg="#ffffff")
         # Create menu frame with a professional style
-        self.menu_frame = tk.Frame(self.root, bg="#333333")
+        self.menu_frame = tk.Frame(self.root,bg="#97e6e0")  # Set the background color here
         self.menu_frame.pack(side=tk.TOP, fill=tk.X)
 
         # Create main frame with Notebook
@@ -1155,7 +1179,8 @@ class DashboardApp:
         # Create a hierarchical menu
         self.menu = tk.Menu(self.root)
         self.root.config(menu=self.menu)
-
+        
+        
         master_menu = tk.Menu(self.menu, tearoff=0)
         master_menu.add_command(label="Test Master", command=lambda: self.show_page("viewtest"))
         master_menu.add_command(label="RefDr Master", command=lambda: self.show_page("viewrefdr"))
@@ -1183,7 +1208,7 @@ class DashboardApp:
 def login():
     uname = username.get()
     pwd = password.get()
-
+    
     if uname == '' or pwd == '':
         message.set("Fill the empty fields!!!")
     else:
@@ -1199,12 +1224,14 @@ def open_dashboard():
     root = Tk()
     app = DashboardApp(root)
     root.mainloop()
+    
 
 def Loginform():
+    
     global login_screen
     login_screen = Tk()
     login_screen.title("ekon")
-    login_screen.geometry("350x250")
+    login_screen.geometry("1200x840")
     login_screen["bg"] = "#1C2833"
     global message
     global username
@@ -1212,14 +1239,16 @@ def Loginform():
     username = StringVar()
     password = StringVar()
     message = StringVar()
-
-    Label(login_screen, width="300", text="Login Form", bg="#0E6655", fg="white", font=("Arial", 12, "bold")).pack()
-    Label(login_screen, text="Username * ", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=20, y=40)
-    Entry(login_screen, textvariable=username, bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=120, y=42)
-    Label(login_screen, text="Password * ", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=20, y=80)
-    Entry(login_screen, textvariable=password, show="*", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=120, y=82)
-    Label(login_screen, text="", textvariable=message, bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=95, y=120)
-    Button(login_screen, text="Login", width=10, height=1, command=login, bg="#0E6655", fg="white", font=("Arial", 12, "bold")).place(x=125, y=170)
+    custom_font = ("Consolas", 12, "bold")
+    
+    
+    Label(login_screen, width="300", text="Login Form", bg="paleTurquoise2", fg="dark slate gray", font=(custom_font)).pack()  #header
+    Label(login_screen, text="Username * ", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=40, y=60)
+    Entry(login_screen, textvariable=username, bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=140, y=62)
+    Label(login_screen, text="Password * ", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=40, y=100)
+    Entry(login_screen, textvariable=password, show="*", bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=140, y=102)
+    Label(login_screen, text="", textvariable=message, bg="#1C2833", fg="white", font=("Arial", 12, "bold")).place(x=95, y=140)
+    Button(login_screen, text="Login", width=10, height=1, command=login, bg="#0E6655", fg="white", font=("Arial", 12, "bold")).place(x=145, y=190)
     login_screen.mainloop()
 
 Loginform()

@@ -16,9 +16,11 @@ class PatientRegistrationPage(tk.Frame):
         self.master = master
         self.registration_callback = registration_callback
         self.configure(bg="#ffffff")
-        self.label = tk.Label(self, text="",font=("Arial", 20))
-        Label(self, text= "Patient Registration Page", font= ("Arial", 16),width=25,
-        background="#ffffff").pack(pady=15, side= TOP, anchor="w")
+        self.label = tk.Label(self, text="", font=("Arial", 20))
+        
+
+        Label(self, text="Patient Registration Page", font=("Arial", 16), width=28, background="#ffffff").pack(pady=30, side=tk.TOP, anchor="w")
+
         self.label.pack(pady=30)
         self.setup_registration_form()
     
@@ -107,74 +109,66 @@ class PatientRegistrationPage(tk.Frame):
      
   
     def setup_registration_form(self):
-        
      style = ttk.Style()
+     style.configure("TLabel", foreground="#1C2833", background="#ffffff", font=("Arial", 14))
+     style.configure("TEntry", font=("Arial", 12))
  
      uhid = self.generate_uhid()
  
-     label_font = ("Arial", 14)
-     entry_font = ("Arial", 12)
+     # Create a frame to hold the registration form
+     form_frame = ttk.Frame(self, borderwidth=40, relief="raised")
+     form_frame.place(x=50, y=100)
      
-     # Create frames for each row of entry boxes
-     row1_frame = ttk.Frame(self)
-     row1_frame.place(x=80, y=90)
- 
-     row2_frame = ttk.Frame(self)
-     row2_frame.place(x=100, y=180)
- 
-     row3_frame = ttk.Frame(self)
-     row3_frame.place(x=120, y=270)
- 
      # First row
-     lb1 = ttk.Label(row1_frame, text="Patient Code:",background="#ffffff", width='20',foreground="#1C2833" , font=label_font)
-     lb1.grid(row=0, column=1,pady=10)
-     self.en1 = ttk.Entry(row1_frame,background="#ffffff", font=entry_font)
+     lb1 = ttk.Label(form_frame, text="Patient Code:")
+     lb1.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+     self.en1 = ttk.Entry(form_frame, font=("Arial", 12))
      self.en1.insert(0, uhid)
      self.en1.state(['readonly'])
-     self.en1.grid(row=1, column=1, padx=10)
- 
-     lb2 = ttk.Label(row1_frame, text="Patient Name:", background="#ffffff", width='17',foreground="#1C2833" , font=label_font)
-     lb2.grid(row=0, column=3, padx=10)
-     self.en3 = ttk.Entry(row1_frame,background="#ffffff",font=entry_font ,foreground="#1C2833",width='40')
-     self.en3.grid(row=1, column=3, padx=10)
- 
-     lb3 = ttk.Label(row1_frame, text="Title:",background="#ffffff",width='17',foreground="#1C2833" , font=label_font)
-     lb3.grid(row=0, column=5, padx=10)
-     self.en4 = ttk.Entry(row1_frame,  background="#ffffff",font=entry_font)
-     self.en4.grid(row=1, column=5, padx=10)
- 
-     # Second row
-     lb5 = ttk.Label(row2_frame, text="Date of Birth:",background="#ffffff",width='17',foreground="#1C2833", font=label_font)
-     lb5.grid(row=0, column=1, padx=5,pady = 10)
-     self.en5 = ttk.Entry(row2_frame, background="#ffffff", font=entry_font,width='40')
-     self.en5.grid(row=1, column=1, padx=5)
- 
-     lb6 = ttk.Label(row2_frame, text="Age:",foreground="#1C2833" ,width='17',background="#ffffff", font=label_font)
-     lb6.grid(row=0, column=3, padx=10)
-     self.en6 = ttk.Entry(row2_frame, background="#ffffff", font=entry_font)
-     self.en6.grid(row=1, column=3, padx=10)
- 
-     lb7 = ttk.Label(row2_frame, text="Email ID:",foreground="#1C2833" ,width='17',background="#ffffff", font=label_font)
-     lb7.grid(row=0, column=5, padx=10)
-     self.en7 = ttk.Entry(row2_frame,  background="#ffffff",font=entry_font)
-     self.en7.grid(row=1, column=5, padx=10)
- 
+     self.en1.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
+     
+     lb2 = ttk.Label(form_frame, text="Patient Name:")
+     lb2.grid(row=0, column=1, padx=10, pady=5, sticky="w")
+     self.en3 = ttk.Entry(form_frame, font=("Arial", 12))
+     self.en3.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+     
+     lb3 = ttk.Label(form_frame, text="Title:")
+     lb3.grid(row=0, column=2, padx=10, pady=5, sticky="w")
+     self.en4 = ttk.Entry(form_frame, font=("Arial", 12))
+     self.en4.grid(row=1, column=2, padx=10, pady=5, sticky="ew")
+     
+    
+     lb5 = ttk.Label(form_frame, text="Date of Birth:")
+     lb5.grid(row=0, column=3, padx=10, pady=5, sticky="w")
+     self.en5 = ttk.Entry(form_frame, font=("Arial", 12))
+     self.en5.grid(row=1, column=3, padx=10, pady=5, sticky="ew")
+     
+      # Second row  
+     lb6 = ttk.Label(form_frame, text="Age:")
+     lb6.grid(row=4, column=0, padx=10, pady=15, sticky="w")
+     self.en6 = ttk.Entry(form_frame, font=("Arial", 12))
+     self.en6.grid(row=5, column=0, padx=10, pady=15, sticky="ew")
+     
+     lb7 = ttk.Label(form_frame, text="Email ID:")
+     lb7.grid(row=4, column=1, padx=10, pady=15, sticky="w")
+     self.en7 = ttk.Entry(form_frame, font=("Arial", 12))
+     self.en7.grid(row=5, column=1, padx=10, pady=15, sticky="ew")
+     
      # Third row
-     lb8 = ttk.Label(row3_frame, text="Phone Number:",background="#ffffff",width='17',foreground="#1C2833" , font=label_font)
-     lb8.grid(row=0, column=1, padx=10)
-     self.en8 = ttk.Entry(row3_frame, background="#ffffff", font=entry_font)
-     self.en8.grid(row=1, column=1, padx=10)
- 
-     lb9 = ttk.Label(row3_frame, text="Gender:",foreground="#1C2833" ,width='17',background="#ffffff", font=label_font)
-     lb9.grid(row=0, column=3, padx=10)
-     self.en9 = ttk.Entry(row3_frame,  background="#ffffff",font=entry_font)
-     self.en9.grid(row=1, column=3, padx=10)
- 
-     register_button = ttk.Button(self, text="Register", command=self.register_patient)
-     register_button.place(x=200, y=420)
- 
-      
-  
+     lb8 = ttk.Label(form_frame, text="Phone Number:")
+     lb8.grid(row=4, column=2, padx=10, pady=15, sticky="w")
+     self.en8 = ttk.Entry(form_frame, font=("Arial", 12))
+     self.en8.grid(row=5, column=2, padx=10, pady=15, sticky="ew")
+     
+     lb9 = ttk.Label(form_frame, text="Gender:")
+     lb9.grid(row=4, column=3, padx=10, pady=15, sticky="w")
+     self.en9 = ttk.Entry(form_frame, font=("Arial", 12))
+     self.en9.grid(row=5, column=3, padx=10, pady=15, sticky="ew")
+     
+     register_button = ttk.Button(form_frame, text="Register", command=self.register_patient)
+     register_button.place(relx=0.5, rely=1.1, anchor="s")
+     register_button["padding"] = (10, 5)
+
         
 class ViewSavedDataPage(tk.Frame):
     def __init__(self, master=None, dashboard_app=None, **kwargs):
